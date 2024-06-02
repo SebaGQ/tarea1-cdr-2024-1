@@ -146,7 +146,7 @@ public:
         cout << "Juego nuevo [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]" << endl;
         tablero.inicializar();
         char AlAzar = (rand() % 2 == 0) ? 'S' : 'C'; //Determina quién comienza de manera aleatoria
-        string mensaje = "Presione cualquier tecla para iniciar el juego"; // Mensaje inicial
+        string mensaje = "Envíe cualquier caracter para iniciar el juego"; // Mensaje inicial
         send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
         
         n_bytes = recv(socket_cliente, buffer, 1024, 0);
