@@ -32,6 +32,7 @@ public:
         }
 
         cout << "Conectado al servidor en " << ip << ":" << puerto << "." << endl;
+        cout << "Para salir, puedes escribir 'exit' en cualquier momento.";
     }
 
     // Destructor de la clase Cliente
