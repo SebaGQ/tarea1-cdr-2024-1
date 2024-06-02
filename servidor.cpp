@@ -43,11 +43,11 @@ public:
         }
         tablero_str += "  -------------\n";
         tablero_str += "  1 2 3 4 5 6 7\n";
-        // Envia el tablero al cliente
+        // Envía el tablero al cliente
         send(socket_cliente, tablero_str.c_str(), tablero_str.size(), 0);
     }
 
-    //Busca los 4 en linea
+    //Busca los 4 en línea
     bool comprobarGanador(char ficha) {
         // Revisar filas
         for (int i = 0; i < filas; i++) {
@@ -85,7 +85,7 @@ public:
     }
 
     bool tableroLleno() {
-        // Verifica si el tablero esta lleno
+        // Verifica si el tablero está lleno
         for (int i = 0; i < filas; ++i) {
             for (int j = 0; j < columnas; ++j) {
                 if (tablero[i][j] == ' ') {
@@ -108,7 +108,7 @@ public:
     }
 
     bool columnaLlena(int col) {
-        // Verifica si una columna esta llena
+        // Verifica si una columna está llena
         for (int i = 0; i < filas; ++i) {
             if (tablero[i][col - 1] == ' ') {
                 return false;
@@ -123,6 +123,18 @@ class Juego {
 private:
     Tablero tablero; // Instancia del tablero
 
+    // Coloca una ficha del servidor de manera aleatoria
+    void colocarFichaServidor() {
+        srand(time(NULL));
+        bool colocado = false;
+        while (!colocado) {
+            int col = rand() % columnas;
+            if (tablero.colocarFicha(col + 1, 'S')) {
+                colocado = true;
+            }
+        }
+    }
+
 public:
     void jugar(int socket_cliente, struct sockaddr_in direccionCliente) {
         srand(time(NULL)); // Semilla para aleatoriedad
@@ -133,9 +145,9 @@ public:
         inet_ntop(AF_INET, &(direccionCliente.sin_addr), ip, INET_ADDRSTRLEN);
         cout << "Juego nuevo [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]" << endl;
         tablero.inicializar();
-        char AlAzar = (rand() % 2 == 0) ? 'S' : 'C'; //Determina quien comienza de manera aleatoria
+        char AlAzar = (rand() % 2 == 0) ? 'S' : 'C'; //Determina quién comienza de manera aleatoria
         string mensaje = "Presione cualquier tecla para iniciar el juego"; // Mensaje inicial
-        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
         
         n_bytes = recv(socket_cliente, buffer, 1024, 0);
         if (n_bytes <= 0) {
@@ -151,7 +163,7 @@ public:
             cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: inicia juego el servidor" << endl;
         }
         
-        //Codigo del juego como tal
+        //Código del juego como tal
         while (true) {
                 int columna;
                 buffer[n_bytes] = '\0';
@@ -159,7 +171,7 @@ public:
                 //Turno del cliente
                 if (AlAzar == 'C') {
                     mensaje = "Es su turno, ingrese columna. (1-7) ";
-                    // Envia mensaje al cliente
+                    // Envía mensaje al cliente
                     send(socket_cliente, mensaje.c_str(), mensaje.size(), 0);
                     n_bytes = recv(socket_cliente, buffer, 1024, 0);
                     buffer[n_bytes] = '\0';
@@ -170,7 +182,7 @@ public:
                     columna = atoi(&buffer[0]);
                     while (tablero.columnaLlena(columna)) {
                         mensaje = "Columna llena, eliga otra: ";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         n_bytes = recv(socket_cliente, buffer, 1024, 0);
                         if (strncmp(buffer, "exit", 4) == 0) {
                             cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "] ha salido del juego." << endl;
@@ -181,7 +193,7 @@ public:
                     }
                     while (columna < 1 || columna > 7) {
                         mensaje = "Columna invalida, vuelva a ingresar: ";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         n_bytes = recv(socket_cliente, buffer, 1024, 0);
                         if (strncmp(buffer, "exit", 4) == 0) {
                             cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "] ha salido del juego." << endl;
@@ -195,24 +207,24 @@ public:
                     if (tablero.comprobarGanador('C')) {
                         tablero.imprimir(socket_cliente);
                         mensaje = "Ganador Cliente, felicitaciones\nFin del Juego.\n";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: gana cliente." << endl;
                         break;
                     }
                     if (tablero.tableroLleno()) {
                         tablero.imprimir(socket_cliente);
                         mensaje = "Tablero lleno, es un empate.";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: empate." << endl;
                         break;
                     }
                     mensaje = "\nEs el turno del Servidor...\n";
-                    send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                    send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                     colocarFichaServidor();
                     if (tablero.comprobarGanador('S')) {
                         tablero.imprimir(socket_cliente);
                         mensaje = "Gana el Servidor...\nFin del juego.\n";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: gana Servidor." << endl;
                         break;
                     }
@@ -222,11 +234,11 @@ public:
                  //Turno del servidor
                 } else if (AlAzar == 'S') {
                     mensaje = "Juega el servidor\nEspere su turno\n";
-                    send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                    send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                     colocarFichaServidor();
                     tablero.imprimir(socket_cliente);
                     mensaje = "Es su turno, ingrese columna. (1-7): ";
-                    send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                    send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                     n_bytes = recv(socket_cliente, buffer, 1024, 0);
                     if (strncmp(buffer, "exit", 4) == 0) {
                         cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "] ha salido del juego." << endl;
@@ -236,7 +248,7 @@ public:
                     columna = atoi(&buffer[0]);
                     while (tablero.columnaLlena(columna)) {
                         mensaje = "Columna llena, eliga otra: ";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         n_bytes = recv(socket_cliente, buffer, 1024, 0);
                         if (strncmp(buffer, "exit", 4) == 0) {
                             cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "] ha salido del juego." << endl;
@@ -247,7 +259,7 @@ public:
                     }
                     while (columna < 1 || columna > 7) {
                         mensaje = "Columna invalida, vuelva a ingresar: ";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         n_bytes = recv(socket_cliente, buffer, 1024, 0);
                         if (strncmp(buffer, "exit", 4) == 0) {
                             cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "] ha salido del juego." << endl;
@@ -263,21 +275,21 @@ public:
                     if (tablero.comprobarGanador('C')) {
                         tablero.imprimir(socket_cliente);
                         mensaje = "Ganador Cliente, felicitaciones\nFin del Juego.\n";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: gana cliente." << endl;
                         break;
                     }
                     if (tablero.comprobarGanador('S')) {
                         tablero.imprimir(socket_cliente);
                         mensaje = "Gana el Servidor...\nFin del juego.\n";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: gana Servidor." << endl;
                         break;
                     }
                     if (tablero.tableroLleno()) {
                         tablero.imprimir(socket_cliente);
                         mensaje = "Tablero lleno, es un empate.";
-                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envia mensaje al cliente
+                        send(socket_cliente, mensaje.c_str(), mensaje.size(), 0); // Envía mensaje al cliente
                         cout << "Juego [" << ip << ":" << ntohs(direccionCliente.sin_port) << "]: empate." << endl;
                         break;
                     }
@@ -287,32 +299,20 @@ public:
             }
         }
     }
-
-private:
-    void colocarFichaServidor() {
-        srand(time(NULL));
-        bool colocado = false;
-        while (!colocado) {
-            int col = rand() % columnas;
-            if (tablero.colocarFicha(col + 1, 'S')) {
-                colocado = true;
-            }
-        }
-    }
 };
 
 void *jugar_wrapper(void *arg) {
-    pair<int, struct sockaddr_in> *data = (pair<int, struct sockaddr_in> *)arg; // Extrae socket y direccion de los args 
+    pair<int, struct sockaddr_in> *data = (pair<int, struct sockaddr_in> *)arg; // Extrae socket y dirección de los args 
     
     int socket_cliente = data->first; // Asigna el socket del cliente
     
-    struct sockaddr_in direccionCliente = data->second; // Asigna la direccion del cliente
+    struct sockaddr_in direccionCliente = data->second; // Asigna la dirección del cliente
     
     Juego juego; // Crea una instancia de la clase Juego
     
     juego.jugar(socket_cliente, direccionCliente); // Inicia el juego
     
-    //Aqui ya termino el juego.
+    //Aquí ya terminó el juego.
     
     close(socket_cliente); // Cierra el socket del cliente
     
@@ -334,19 +334,19 @@ int main(int argc, char **argv) {
     int socket_server = 0;
     struct sockaddr_in direccionServidor, direccionCliente;
     
-    // Se crea el socker
+    // Se crea el socket
     if ((socket_server = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         cerr << "No se pudo crear el socket." << endl;
         return 1;
     }
     
-    //Configura direccion del servidor
+    //Configura dirección del servidor
     memset(&direccionServidor, 0, sizeof(direccionServidor));
     direccionServidor.sin_family = AF_INET;
     direccionServidor.sin_addr.s_addr = htonl(INADDR_ANY);
     direccionServidor.sin_port = htons(port);
 
-    // Asigna al socket el puerto y la direccion especificada
+    // Asigna al socket el puerto y la dirección especificada
     if (bind(socket_server, (struct sockaddr *)&direccionServidor, sizeof(direccionServidor)) < 0) {
         cerr << "Error en bind()." << endl;
         return 1;
@@ -365,12 +365,12 @@ int main(int argc, char **argv) {
     while (true) {
         int socket_cliente;
         
-        //Se acepta la conexion
+        //Se acepta la conexión
         if ((socket_cliente = accept(socket_server, (struct sockaddr *)&direccionCliente, &addr_size)) < 0) {
             cerr << "Error en accept()." << endl;
             continue;
         }
-        //Crea un hilo para cada conexion con el cliente
+        //Crea un hilo para cada conexión con el cliente
         pthread_t thread;
         pair<int, struct sockaddr_in> *data = new pair<int, struct sockaddr_in>(socket_cliente, direccionCliente);
         // Cierra el socket y limpia memoria en caso de error
