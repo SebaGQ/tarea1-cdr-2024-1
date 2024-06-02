@@ -298,8 +298,7 @@ public:
                 }
             }
         }
-    }
-};
+    };
 
 void *jugar_wrapper(void *arg) {
     pair<int, struct sockaddr_in> *data = (pair<int, struct sockaddr_in> *)arg; // Extrae socket y dirección de los args 
