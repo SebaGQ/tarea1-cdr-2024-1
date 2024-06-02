@@ -7,6 +7,10 @@ LDFLAGS = -lpthread
 CLIENTE_EXEC = cliente
 SERVIDOR_EXEC = servidor
 
+# Variables para IP y puerto (valores predeterminados)
+IP = 127.0.0.1
+PORT = 7777
+
 # Regla para compilar todo
 all: $(CLIENTE_EXEC) $(SERVIDOR_EXEC)
 
@@ -24,11 +28,11 @@ clean:
 
 # Regla para ejecutar el cliente
 run_cliente:
-	./cliente 127.0.0.1 7777
+	./$(CLIENTE_EXEC) $(IP) $(PORT)
 
 # Regla para ejecutar el servidor
 run_servidor:
-	./servidor 7777
+	./$(SERVIDOR_EXEC) $(PORT)
 
 # Phony targets
 .PHONY: all clean run_cliente run_servidor
